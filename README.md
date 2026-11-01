@@ -84,6 +84,26 @@ The response includes one URL per card. The URL is the only card credential: ope
 - Gold is closed-loop virtual currency only: no purchase, cash-out, marketplace, or real-money value.
 - Content seed: Riftling, Scrap Hound, Hollow Knight, Bell Warden boss; onboarding quests and original lore are in `game-content.js`.
 
+## Direct APK download (without Play Store)
+
+The repository contains a **manual/tagged GitHub Actions workflow** at `.github/workflows/android-release.yml`. It creates a **draft GitHub Release** with a signed APK and SHA-256 checksum; it does not publish a public Release automatically. A maintainer must review the draft and click Publish.
+
+Before running the workflow:
+
+1. Install JDK 17 and Android SDK command-line tools on your private build machine, or use the GitHub-hosted workflow.
+2. Create a permanent release keystore outside the repo:
+   ```bash
+   keytool -genkeypair -v -keystore riftbound-release.jks -alias riftbound -keyalg RSA -keysize 4096 -validity 10000
+   ```
+3. Back up the `.jks` and passwords privately. Never commit or upload the raw keystore.
+4. For local builds, copy `mobile/android/key.properties.example` to `mobile/android/key.properties` and fill it privately. The file is ignored.
+5. For GitHub Actions, add repository secrets: `RIFT_RELEASE_KEYSTORE_B64`, `RIFT_RELEASE_STORE_PASSWORD`, `RIFT_RELEASE_KEY_ALIAS`, and `RIFT_RELEASE_KEY_PASSWORD`. Encode the keystore privately with `base64` and paste only the resulting secret into GitHub.
+6. Trigger the workflow manually or push a `v*` tag. The workflow writes a **draft** Release. Review the APK/checksum, then publish it.
+
+The app download URL will be the asset URL on the published GitHub Release. On Android, users may need to allow **Install unknown apps** for the browser/file manager that opened the APK. Updates only work when every APK uses the same `applicationId` (`id.pascadigital.riftbound`) and the same permanent signing key. The current repository intentionally refuses to build a release APK when signing secrets are missing; it never silently falls back to the debug key.
+
+This environment did not have Java/Android SDK tools on PATH, so no signed APK was generated here. The workflow is prepared but requires the signing secrets before it can produce the release artifact.
+
 ## Flutter mobile client
 
 Pengalaman utama mobile ada di folder [`mobile/`](./mobile/), memakai Flutter/Dart. Backend Node tetap menjadi sumber kebenaran untuk session, Guardian, kartu, encounter, dan reward; Flutter tidak menghitung XP/loot sendiri. Client native saat ini mencakup login/register bearer token, rotating refresh token, QR scan, App Links routing, card claim selection, Guardian roster/profile, dan prototype Camp Khar.

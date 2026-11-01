@@ -22,6 +22,23 @@ flutter run --dart-define=RIFT_API_BASE_URL=https://rift.pascadigital.my.id
 
 Do not put the backend `ADMIN_KEY` in this app. The app only receives short-lived access tokens and stores refresh tokens using platform secure storage.
 
+## Build an installable APK without Play Store
+
+For a stable release APK, create a permanent keystore outside the repo:
+
+```bash
+keytool -genkeypair -v -keystore riftbound-release.jks -alias riftbound -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Back it up privately. Copy `android/key.properties.example` to `android/key.properties` and fill it locally, or use the repository workflow secrets. The Gradle release build fails closed if signing is missing; it does not use the debug key.
+
+```bash
+flutter build apk --release --dart-define=RIFT_API_BASE_URL=https://rift.pascadigital.my.id
+sha256sum build/app/outputs/flutter-apk/app-release.apk
+```
+
+Upload the APK and checksum to a reviewed/published GitHub Release. Users can download the APK in their browser, allow **Install unknown apps** for that browser/file manager, and install it manually. Future APK updates must use the same application ID and signing key.
+
 ## Deep links
 
 Android manifest and iOS Associated Domains are configured for:

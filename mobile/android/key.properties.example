@@ -1,0 +1,6 @@
+# Copy this file to key.properties on your private machine only.
+# Never commit key.properties, the .jks file, or these passwords.
+storeFile=C:/secure/path/riftbound-release.jks
+storePassword=REPLACE_WITH_KEYSTORE_PASSWORD
+keyAlias=riftbound
+keyPassword=REPLACE_WITH_KEY_PASSWORD
