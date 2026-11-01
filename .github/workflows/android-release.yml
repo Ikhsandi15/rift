@@ -39,21 +39,27 @@ jobs:
           test -n "$RIFT_RELEASE_KEYSTORE_B64"
           printf '%s' "$RIFT_RELEASE_KEYSTORE_B64" | base64 --decode > android/riftbound-release.jks
 
-      - name: Write signing properties
+      - name: Validate signing keystore and write properties
         env:
           RIFT_RELEASE_STORE_PASSWORD: ${{ secrets.RIFT_RELEASE_STORE_PASSWORD }}
           RIFT_RELEASE_KEY_ALIAS: ${{ secrets.RIFT_RELEASE_KEY_ALIAS }}
           RIFT_RELEASE_KEY_PASSWORD: ${{ secrets.RIFT_RELEASE_KEY_PASSWORD }}
         run: |
+          set -euo pipefail
+          KEYSTORE="$GITHUB_WORKSPACE/mobile/android/riftbound-release.jks"
           test -n "$RIFT_RELEASE_STORE_PASSWORD"
           test -n "$RIFT_RELEASE_KEY_ALIAS"
           test -n "$RIFT_RELEASE_KEY_PASSWORD"
+          test -s "$KEYSTORE" || { echo "Keystore file missing or empty at expected workspace path."; exit 1; }
+          keytool -list -keystore "$KEYSTORE" -storepass "$RIFT_RELEASE_STORE_PASSWORD" -alias "$RIFT_RELEASE_KEY_ALIAS" >/dev/null || { echo "Keystore/password/alias validation failed."; exit 1; }
           cat > android/key.properties <<EOF
-          storeFile=riftbound-release.jks
+          storeFile=$KEYSTORE
           storePassword=$RIFT_RELEASE_STORE_PASSWORD
           keyAlias=$RIFT_RELEASE_KEY_ALIAS
           keyPassword=$RIFT_RELEASE_KEY_PASSWORD
           EOF
+          test -s android/key.properties
+          echo "Signing keystore validated and Gradle properties written (secret values hidden)."
 
       - name: Analyze and test
         run: |

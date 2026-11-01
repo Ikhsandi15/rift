@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.File
 import java.io.FileInputStream
 
 plugins {
@@ -20,6 +21,10 @@ val releaseStoreFile = signingValue("storeFile", "RIFT_RELEASE_STORE_FILE")
 val releaseStorePassword = signingValue("storePassword", "RIFT_RELEASE_STORE_PASSWORD")
 val releaseKeyAlias = signingValue("keyAlias", "RIFT_RELEASE_KEY_ALIAS")
 val releaseKeyPassword = signingValue("keyPassword", "RIFT_RELEASE_KEY_PASSWORD")
+val releaseKeystore = releaseStoreFile?.let { candidate ->
+    val path = File(candidate)
+    if (path.isAbsolute) path else rootProject.file(candidate)
+}
 val hasReleaseSigning = listOf(releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword).all { !it.isNullOrBlank() }
 
 android {
@@ -46,7 +51,7 @@ android {
     signingConfigs {
         create("release") {
             if (hasReleaseSigning) {
-                storeFile = rootProject.file(releaseStoreFile!!)
+                storeFile = releaseKeystore
                 storePassword = releaseStorePassword
                 keyAlias = releaseKeyAlias
                 keyPassword = releaseKeyPassword
@@ -62,7 +67,7 @@ android {
             if (releaseStoreFile?.endsWith(".jks") == false && releaseStoreFile?.endsWith(".keystore") == false) {
                 throw GradleException("Release signing keystore is missing or invalid. Verify RIFT_RELEASE_STORE_FILE/key.properties storeFile.")
             }
-            if (!rootProject.file(releaseStoreFile!!).exists()) {
+            if (releaseKeystore == null || !releaseKeystore.exists() || releaseKeystore.length() == 0L) {
                 throw GradleException("Release signing keystore not found at configured storeFile.")
             }
             signingConfig = signingConfigs.getByName("release")
