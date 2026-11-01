@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: card-quest
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:3000}
+      - DB_PATH=/app/data/card-quest.sqlite
+      - ADMIN_KEY=${ADMIN_KEY}
+    volumes:
+      - card-quest-data:/app/data
+
+volumes:
+  card-quest-data:
+    driver: local
