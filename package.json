@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node --watch launcher.js",
     "start": "node launcher.js",
-    "check": "node --check launcher.js && node --check server.js && node --check db.js && node --check game-content.js && node --check reset.js && node --check public/app.js && node --check public/game.js && node --check public/admin.js && node --check public/print.js",
+    "check": "node --check launcher.js && node --check server.js && node --check db.js && node --check game-content.js && node --check reset.js && node --check public/app.js && node --check public/game.js && node --check public/admin.js && node --check public/print.js && node --check tests/mobile-auth.test.js",
     "reset": "node reset.js",
     "test": "node --test"
   },

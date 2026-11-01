@@ -19,9 +19,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   token_hash TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at INTEGER NOT NULL,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  refresh_hash TEXT,
+  refresh_expires_at INTEGER,
+  device_name TEXT,
+  client_type TEXT NOT NULL DEFAULT 'web'
 );
 CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS sessions_refresh_hash_idx ON sessions(refresh_hash) WHERE refresh_hash IS NOT NULL;
 CREATE TABLE IF NOT EXISTS avatars (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -98,6 +103,12 @@ CREATE TABLE IF NOT EXISTS rest_cooldowns (
 );
 `);
 
+const sessionColumns = new Set(db.pragma('table_info(sessions)').map(column => column.name));
+if (!sessionColumns.has('refresh_hash')) db.exec('ALTER TABLE sessions ADD COLUMN refresh_hash TEXT');
+if (!sessionColumns.has('refresh_expires_at')) db.exec('ALTER TABLE sessions ADD COLUMN refresh_expires_at INTEGER');
+if (!sessionColumns.has('device_name')) db.exec('ALTER TABLE sessions ADD COLUMN device_name TEXT');
+if (!sessionColumns.has('client_type')) db.exec("ALTER TABLE sessions ADD COLUMN client_type TEXT NOT NULL DEFAULT 'web'");
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS sessions_refresh_hash_idx ON sessions(refresh_hash) WHERE refresh_hash IS NOT NULL');
 const cardColumns = new Set(db.pragma('table_info(cards)').map(column => column.name));
 if (!cardColumns.has('claim_hash')) db.exec('ALTER TABLE cards ADD COLUMN claim_hash TEXT');
 if (!cardColumns.has('claim_expires_at')) db.exec('ALTER TABLE cards ADD COLUMN claim_expires_at INTEGER NOT NULL DEFAULT 4102444800000');
@@ -117,9 +128,16 @@ export const statements = {
   userByName: db.prepare('SELECT * FROM users WHERE username = ?'),
   userById: db.prepare('SELECT * FROM users WHERE id = ?'),
   insertUser: db.prepare('INSERT INTO users (id, username, password_hash, created_at) VALUES (@id,@username,@passwordHash,@createdAt)'),
-  insertSession: db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at,created_at) VALUES (?,?,?,?)'),
   sessionUser: db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?'),
+  sessionByAccessHash: db.prepare('SELECT * FROM sessions WHERE token_hash=? AND expires_at>?'),
+  sessionByRefreshHash: db.prepare('SELECT * FROM sessions WHERE refresh_hash=? AND refresh_expires_at>?'),
+  insertSession: db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at,created_at,refresh_hash,refresh_expires_at,device_name,client_type) VALUES (?,?,?,?,?,?,?,?)'),
+  insertWebSession: db.prepare('INSERT INTO sessions (token_hash,user_id,expires_at,created_at,client_type) VALUES (?,?,?,?,?)'),
+  rotateSession: db.prepare('UPDATE sessions SET token_hash=?,expires_at=?,refresh_hash=?,refresh_expires_at=? WHERE token_hash=? AND refresh_hash=?'),
+  sessionInfoByHash: db.prepare('SELECT token_hash,refresh_hash FROM sessions WHERE token_hash=? AND user_id=?'),
   deleteSession: db.prepare('DELETE FROM sessions WHERE token_hash=?'),
+  deleteSessionByRefreshHash: db.prepare('DELETE FROM sessions WHERE refresh_hash=?'),
+  sessionsByUser: db.prepare('SELECT token_hash,expires_at,created_at,device_name,client_type FROM sessions WHERE user_id=? ORDER BY created_at DESC'),
   pruneSessions: db.prepare('DELETE FROM sessions WHERE expires_at<=?'),
   deleteUserSessions: db.prepare('DELETE FROM sessions WHERE user_id=?'),
   insertAvatar: db.prepare(`INSERT INTO avatars (id,user_id,name,role,level,xp,gold,hp,max_hp,stamina,max_stamina,attack,defense,wins,losses,inventory,created_at,updated_at) VALUES (@id,@userId,@name,@role,@level,@xp,@gold,@hp,@maxHp,@stamina,@maxStamina,@attack,@defense,@wins,@losses,@inventory,@createdAt,@updatedAt)`),

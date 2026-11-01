@@ -84,6 +84,20 @@ The response includes one URL per card. The URL is the only card credential: ope
 - Gold is closed-loop virtual currency only: no purchase, cash-out, marketplace, or real-money value.
 - Content seed: Riftling, Scrap Hound, Hollow Knight, Bell Warden boss; onboarding quests and original lore are in `game-content.js`.
 
+## Flutter mobile client
+
+Pengalaman utama mobile ada di folder [`mobile/`](./mobile/), memakai Flutter/Dart. Backend Node tetap menjadi sumber kebenaran untuk session, Guardian, kartu, encounter, dan reward; Flutter tidak menghitung XP/loot sendiri. Client native saat ini mencakup login/register bearer token, rotating refresh token, QR scan, App Links routing, card claim selection, Guardian roster/profile, dan prototype Camp Khar.
+
+```bash
+cd mobile
+flutter pub get
+flutter analyze
+flutter test
+flutter run --dart-define=RIFT_API_BASE_URL=https://rift.pascadigital.my.id
+```
+
+Android App Links dan iOS Universal Links memakai `https://rift.pascadigital.my.id/card/<token>`. Publish `public/.well-known/assetlinks.json` dengan fingerprint signing Android yang benar dan `public/.well-known/apple-app-site-association` dengan Apple Team ID sebelum release store. Placeholder association files sengaja tidak dianggap production-ready. QR sudah diimplementasikan; NFC NDEF reader dan Flame overworld masih milestone berikutnya yang harus diuji pada perangkat fisik.
+
 ## Tests and audits
 
 ```bash
