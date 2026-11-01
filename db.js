@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS sessions (
   client_type TEXT NOT NULL DEFAULT 'web'
 );
 CREATE INDEX IF NOT EXISTS sessions_user_idx ON sessions(user_id);
-CREATE UNIQUE INDEX IF NOT EXISTS sessions_refresh_hash_idx ON sessions(refresh_hash) WHERE refresh_hash IS NOT NULL;
 CREATE TABLE IF NOT EXISTS avatars (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -109,10 +108,8 @@ if (!sessionColumns.has('refresh_expires_at')) db.exec('ALTER TABLE sessions ADD
 if (!sessionColumns.has('device_name')) db.exec('ALTER TABLE sessions ADD COLUMN device_name TEXT');
 if (!sessionColumns.has('client_type')) db.exec("ALTER TABLE sessions ADD COLUMN client_type TEXT NOT NULL DEFAULT 'web'");
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS sessions_refresh_hash_idx ON sessions(refresh_hash) WHERE refresh_hash IS NOT NULL');
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS sessions_refresh_hash_idx ON sessions(refresh_hash) WHERE refresh_hash IS NOT NULL');
 const cardColumns = new Set(db.pragma('table_info(cards)').map(column => column.name));
-if (!cardColumns.has('claim_hash')) db.exec('ALTER TABLE cards ADD COLUMN claim_hash TEXT');
-if (!cardColumns.has('claim_expires_at')) db.exec('ALTER TABLE cards ADD COLUMN claim_expires_at INTEGER NOT NULL DEFAULT 4102444800000');
-if (!cardColumns.has('claim_attempts')) db.exec('ALTER TABLE cards ADD COLUMN claim_attempts INTEGER NOT NULL DEFAULT 0');
 if (!cardColumns.has('claim_hash')) db.exec('ALTER TABLE cards ADD COLUMN claim_hash TEXT');
 if (!cardColumns.has('claim_expires_at')) db.exec('ALTER TABLE cards ADD COLUMN claim_expires_at INTEGER NOT NULL DEFAULT 4102444800000');
 if (!cardColumns.has('claim_attempts')) db.exec('ALTER TABLE cards ADD COLUMN claim_attempts INTEGER NOT NULL DEFAULT 0');
