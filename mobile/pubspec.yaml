@@ -41,6 +41,7 @@ dependencies:
   flame: ^1.38.2
   flutter_riverpod: ^3.4.3
   nfc_manager: ^4.2.1
+  nfc_manager_ndef: ^1.1.0
 
 dev_dependencies:
   flutter_test:

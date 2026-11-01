@@ -4,6 +4,9 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';
+import 'package:nfc_manager/ndef_record.dart';
 
 import 'models/rift_models.dart';
 import 'services/rift_api.dart';
@@ -315,12 +318,124 @@ class _RiftHomeState extends ConsumerState<RiftHome> {
   );
 
   Future<void> _scanCard() async {
-    final token = await Navigator.of(
-      context,
-    ).push<String>(MaterialPageRoute(builder: (_) => const QrScanScreen()));
+    final method = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.qr_code_scanner),
+              title: const Text('Scan QR'),
+              onTap: () => Navigator.pop(sheetContext, 'qr'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.contactless),
+              title: const Text('Tap NFC card'),
+              onTap: () => Navigator.pop(sheetContext, 'nfc'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (method == null || !mounted) return;
+    String? token;
+    if (method == 'qr') {
+      token = await Navigator.of(
+        context,
+      ).push<String>(MaterialPageRoute(builder: (_) => const QrScanScreen()));
+    } else {
+      token = await _readNfcToken();
+    }
     if (token == null || !mounted) return;
     setState(() => _cardToken = token);
     await _loadCard();
+  }
+
+  Future<String?> _readNfcToken() async {
+    final availability = await NfcManager.instance.checkAvailability();
+    if (availability != NfcAvailability.enabled) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'NFC tidak tersedia atau belum aktif. Gunakan QR sebagai alternatif.',
+        );
+      }
+      return null;
+    }
+    final result = Completer<String?>();
+    await NfcManager.instance.startSession(
+      pollingOptions: {
+        NfcPollingOption.iso14443,
+        NfcPollingOption.iso15693,
+        NfcPollingOption.iso18092,
+      },
+      alertMessageIos: 'Dekatkan kartu Guardian ke bagian belakang ponsel',
+      onDiscovered: (tag) async {
+        try {
+          final message = await Ndef.from(tag)?.read();
+          final uri = message == null ? null : _uriFromNdef(message);
+          if (uri != null &&
+              uri.host == 'rift.pascadigital.my.id' &&
+              uri.pathSegments.length >= 2 &&
+              uri.pathSegments.first == 'card') {
+            if (!result.isCompleted) result.complete(uri.pathSegments[1]);
+            await NfcManager.instance.stopSession(
+              alertMessageIos: 'Kartu terbaca',
+            );
+          } else {
+            if (!result.isCompleted) result.complete(null);
+            await NfcManager.instance.stopSession(
+              errorMessageIos: 'Tag tidak berisi URL kartu Riftbound',
+            );
+          }
+        } catch (error) {
+          if (!result.isCompleted) result.completeError(error);
+          await NfcManager.instance.stopSession(
+            errorMessageIos: 'Gagal membaca NDEF',
+          );
+        }
+      },
+    );
+    try {
+      final token = await result.future.timeout(const Duration(seconds: 25));
+      return token;
+    } on TimeoutException {
+      await NfcManager.instance.stopSession(
+        errorMessageIos: 'Waktu scan habis',
+      );
+      if (mounted) {
+        setState(
+          () => _error = 'Waktu scan NFC habis. Coba lagi atau gunakan QR.',
+        );
+      }
+      return null;
+    }
+  }
+
+  Uri? _uriFromNdef(NdefMessage message) {
+    const prefixes = <String>[
+      '',
+      'http://www.',
+      'https://www.',
+      'http://',
+      'https://',
+      'tel:',
+      'mailto:',
+    ];
+    for (final record in message.records) {
+      if (record.typeNameFormat != TypeNameFormat.wellKnown ||
+          String.fromCharCodes(record.type) != 'U' ||
+          record.payload.isEmpty) {
+        continue;
+      }
+      final prefixCode = record.payload.first;
+      final prefix = prefixCode < prefixes.length ? prefixes[prefixCode] : '';
+      final suffix = String.fromCharCodes(record.payload.skip(1));
+      final uri = Uri.tryParse('$prefix$suffix');
+      if (uri != null) return uri;
+    }
+    return null;
   }
 
   Future<void> _newGuardian(BuildContext context) async {
