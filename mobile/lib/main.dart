@@ -641,6 +641,8 @@ class _QrScanScreenState extends State<QrScanScreen> {
           if (raw == null) continue;
           final uri = Uri.tryParse(raw);
           if (uri != null &&
+              uri.scheme == 'https' &&
+              uri.host == 'rift.pascadigital.my.id' &&
               uri.pathSegments.length >= 2 &&
               uri.pathSegments.first == 'card') {
             done = true;
