@@ -152,3 +152,34 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px 
 .player-tag b { color: #f5f7ff; }
 .player-tag small { color: var(--muted); font-size: .75rem; }
 .token-code { font-family: ui-monospace, monospace; font-size: .8rem; background: rgba(0,0,0,.3); padding: 3px 6px; border-radius: 6px; border: 1px solid var(--line); }
+
+/* Claim Highlight & Modern UI enhancements */
+.avatar-card.claim-highlight {
+  border-color: #45d4cd;
+  box-shadow: 0 0 28px rgba(69,212,205,.28);
+  animation: pulse-glow 2.4s infinite ease-in-out;
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 18px rgba(69,212,205,.2); transform: translateY(0); }
+  50% { box-shadow: 0 0 32px rgba(69,212,205,.45); transform: translateY(-3px); }
+}
+
+/* Mobile & Tablet Responsive Polish */
+@media (max-width: 640px) {
+  .topbar { padding: 14px 18px; }
+  .shell { width: calc(100% - 24px); padding: 20px 0 60px; }
+  .dashboard-head h1 { font-size: 2.1rem; }
+  .avatar-card { padding: 18px; border-radius: 20px; }
+  .avatar-card h3 { font-size: 1.5rem; }
+  .avatar-art { width: 95px; height: 95px; font-size: 3rem; margin: 12px auto; }
+  .stat-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .card-tools { display: flex; flex-direction: column; gap: 8px; }
+  .card-tools > * { width: 100%; }
+  .role-grid { grid-template-columns: 1fr; }
+  .auth-panel { padding: 20px; }
+  .hero h1 { font-size: 2.3rem; }
+  .modal { width: 100%; padding: 20px; border-radius: 20px; }
+  .arena-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .arena-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .admin-metrics { grid-template-columns: 1fr; }
+}
