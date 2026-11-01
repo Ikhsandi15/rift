@@ -384,6 +384,7 @@ async function beginEncounter() {
 }
 
 async function combatAction(action) {
+  if (!['attack', 'skill', 'dodge'].includes(action)) return;
   if (!currentEncounter) {
     await beginEncounter();
     return;
@@ -406,7 +407,7 @@ async function combatAction(action) {
   }
 }
 
-window.addEventListener('rift-combat', e => combatAction(e.detail));
+window.onCombatActionTrigger = action => combatAction(action);
 
 document.addEventListener('submit', async e => {
   if (e.target.id === 'auth-form') {
@@ -471,6 +472,7 @@ document.addEventListener('click', async e => {
       renderAuth();
     }
     if (act === 'logout') {
+      window.RiftboundGame?.unmount();
       await api('/api/auth/logout', { method: 'POST' });
       state = { user: null, avatars: [], roles: [] };
       renderAuth();
@@ -485,6 +487,7 @@ document.addEventListener('click', async e => {
       renderDashboard();
     }
     if (act === 'close-game') {
+      window.RiftboundGame?.unmount();
       selected = null;
       currentEncounter = null;
       renderDashboard();
