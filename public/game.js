@@ -8,10 +8,14 @@ class RiftScene extends Phaser.Scene {
 
   init(data) {
     this.avatar = data.avatar;
-    this.role = data.avatar.role;
+    this.role = (data.avatar.role || 'vanguard').toLowerCase();
     this.enemy = data.enemy || { name: 'Riftling', icon: '◉', hp: 55, maxHp: 55 };
     this.enemyHp = this.enemy.hp;
     this.playerHp = this.avatar.hp;
+    this.originPlayerX = 800 * 0.28;
+    this.originPlayerY = 450 * 0.56;
+    this.originEnemyX = 800 * 0.72;
+    this.originEnemyY = 450 * 0.56;
     this.ready = true;
   }
 
@@ -49,10 +53,10 @@ class RiftScene extends Phaser.Scene {
     }
 
     // Ground Shadows & Rift Portal
-    this.add.ellipse(w * 0.28, h * 0.76, 170, 32, 0x03060f, 0.6);
-    this.add.ellipse(w * 0.72, h * 0.76, 170, 32, 0x03060f, 0.6);
+    this.add.ellipse(this.originPlayerX, h * 0.76, 170, 32, 0x03060f, 0.6);
+    this.add.ellipse(this.originEnemyX, h * 0.76, 170, 32, 0x03060f, 0.6);
 
-    const riftPortal = this.add.circle(w * 0.72, h * 0.52, 60, 0x45d4cd, 0.12)
+    const riftPortal = this.add.circle(this.originEnemyX, h * 0.52, 62, 0x45d4cd, 0.12)
       .setStrokeStyle(3, 0x67ede0, 0.5);
     this.tweens.add({
       targets: riftPortal,
@@ -64,11 +68,11 @@ class RiftScene extends Phaser.Scene {
     });
 
     // Player Hero Container
-    this.player = this.add.container(w * 0.28, h * 0.56);
+    this.player = this.add.container(this.originPlayerX, this.originPlayerY);
     this.drawHero();
 
     // Enemy Sprite Container
-    this.enemySprite = this.add.container(w * 0.72, h * 0.56);
+    this.enemySprite = this.add.container(this.originEnemyX, this.originEnemyY);
     this.drawEnemy();
 
     // Physics
@@ -89,14 +93,14 @@ class RiftScene extends Phaser.Scene {
     });
 
     // Top HUD
-    this.hudPlayerName = this.add.text(w * 0.28, 22, `${this.avatar.icon} ${this.avatar.name}`, {
+    this.hudPlayerName = this.add.text(this.originPlayerX, 22, `${this.avatar.icon} ${this.avatar.name}`, {
       fontFamily: 'Inter, system-ui, sans-serif',
       fontSize: '15px',
       fontStyle: 'bold',
       color: '#ffffff'
     }).setOrigin(0.5, 0);
 
-    this.hudEnemyName = this.add.text(w * 0.72, 22, `${this.enemy.icon} ${this.enemy.name}`, {
+    this.hudEnemyName = this.add.text(this.originEnemyX, 22, `${this.enemy.icon} ${this.enemy.name}`, {
       fontFamily: 'Inter, system-ui, sans-serif',
       fontSize: '15px',
       fontStyle: 'bold',
@@ -104,24 +108,24 @@ class RiftScene extends Phaser.Scene {
     }).setOrigin(0.5, 0);
 
     // Health Bar Containers
-    this.hpBarBgPlayer = this.add.rectangle(w * 0.28, 48, 180, 10, 0x1a233d).setStrokeStyle(1, 0x3d4e78);
-    this.hpBarFillPlayer = this.add.rectangle(w * 0.28 - 89, 48, 178, 8, 0x45d4cd).setOrigin(0, 0.5);
+    this.hpBarBgPlayer = this.add.rectangle(this.originPlayerX, 48, 180, 10, 0x1a233d).setStrokeStyle(1, 0x3d4e78);
+    this.hpBarFillPlayer = this.add.rectangle(this.originPlayerX - 89, 48, 178, 8, 0x45d4cd).setOrigin(0, 0.5);
 
-    this.hpBarBgEnemy = this.add.rectangle(w * 0.72, 48, 180, 10, 0x1a233d).setStrokeStyle(1, 0x3d4e78);
-    this.hpBarFillEnemy = this.add.rectangle(w * 0.72 - 89, 48, 178, 8, 0xff5470).setOrigin(0, 0.5);
+    this.hpBarBgEnemy = this.add.rectangle(this.originEnemyX, 48, 180, 10, 0x1a233d).setStrokeStyle(1, 0x3d4e78);
+    this.hpBarFillEnemy = this.add.rectangle(this.originEnemyX - 89, 48, 178, 8, 0xff5470).setOrigin(0, 0.5);
 
     // Telegraph status indicator
-    this.telegraphText = this.add.text(w * 0.72, h * 0.32, '', {
-      fontFamily: 'system-ui, sans-serif',
+    this.telegraphText = this.add.text(this.originEnemyX, h * 0.30, '', {
+      fontFamily: 'Inter, system-ui, sans-serif',
       fontSize: '13px',
       fontStyle: 'bold',
       color: '#ff5470',
-      backgroundColor: '#1b0914cc',
-      padding: { x: 8, y: 4 }
+      backgroundColor: '#1b0914ee',
+      padding: { x: 10, y: 6 }
     }).setOrigin(0.5).setAlpha(0);
 
     // Bottom Help Text
-    this.add.text(w / 2, h - 14, 'WASD/Panah gerak · Spasi Serang · E Skill · Tombol aksi di bawah arena', {
+    this.add.text(w / 2, h - 14, 'WASD/Panah gerak · Spasi Serang · E Skill Role · Tombol aksi sentuh di bawah', {
       fontFamily: 'system-ui, sans-serif',
       fontSize: '12px',
       color: '#8b9abf'
@@ -183,7 +187,7 @@ class RiftScene extends Phaser.Scene {
     g.fillCircle(-11, -4, 5);
     g.fillCircle(11, -4, 5);
 
-    // Mouth / Visor
+    // Mouth
     g.fillStyle(0x361021, 1);
     g.fillRoundedRect(-12, 11, 24, 6, 3);
 
@@ -217,16 +221,13 @@ class RiftScene extends Phaser.Scene {
   updateHud() {
     if (!this.hpBarFillPlayer || !this.hpBarFillEnemy) return;
 
-    // Player HP Bar (178px max)
     const playerPct = Math.max(0, Math.min(1, this.playerHp / (this.avatar.maxHp || 100)));
     this.hpBarFillPlayer.width = Math.max(2, 178 * playerPct);
 
-    // Enemy HP Bar
     const enemyMax = this.enemy.maxHp || 55;
     const enemyPct = Math.max(0, Math.min(1, this.enemyHp / enemyMax));
     this.hpBarFillEnemy.width = Math.max(2, 178 * enemyPct);
 
-    // Colors according to HP
     if (playerPct < 0.3) this.hpBarFillPlayer.fillColor = 0xff5470;
     else this.hpBarFillPlayer.fillColor = 0x45d4cd;
   }
@@ -234,24 +235,21 @@ class RiftScene extends Phaser.Scene {
   startTelegraphCycle() {
     if (this.enemyHp <= 0) return;
 
-    // Clean previous timers
     if (this.telegraphTimer) this.telegraphTimer.remove();
     if (this.enemyTimer) this.enemyTimer.remove();
 
-    // 1.8s telegraph notice
     this.telegraphTimer = this.time.delayedCall(1600, () => {
       if (this.enemyHp <= 0) return;
-      this.telegraphText.setText('⚠️ MUSUH AKAN MENYERANG! TEKAN DODGE').setAlpha(1);
+      this.telegraphText.setText('⚠️ MUSUH SIAP MENYERANG! TEKAN HINDAR (DODGE)').setAlpha(1);
       this.tweens.add({
         targets: this.enemySprite,
-        scale: 1.14,
+        scale: 1.15,
         duration: 250,
         yoyo: true,
         repeat: 2
       });
     });
 
-    // Reset indicator
     this.enemyTimer = this.time.delayedCall(2800, () => {
       if (this.enemyHp <= 0) return;
       this.telegraphText.setAlpha(0);
@@ -260,8 +258,188 @@ class RiftScene extends Phaser.Scene {
   }
 
   triggerAction(action) {
+    if (action === 'skill') {
+      this.playRoleSkillAnimation();
+    } else if (action === 'attack') {
+      this.playAttackAnimation();
+    } else if (action === 'dodge') {
+      this.playDodgeAnimation();
+    }
+
     if (window.onCombatActionTrigger) {
       window.onCombatActionTrigger(action);
+    }
+  }
+
+  playAttackAnimation() {
+    // Quick hero dash forward
+    this.tweens.add({
+      targets: this.player,
+      x: this.originPlayerX + 60,
+      duration: 100,
+      yoyo: true
+    });
+
+    // Slash graphic on enemy
+    const slash = this.add.graphics();
+    slash.lineStyle(4, 0xffffff, 1);
+    slash.beginPath();
+    slash.moveTo(this.originEnemyX - 35, this.originEnemyY - 35);
+    slash.lineTo(this.originEnemyX + 35, this.originEnemyY + 35);
+    slash.strokePath();
+
+    this.tweens.add({
+      targets: slash,
+      alpha: 0,
+      duration: 220,
+      onComplete: () => slash.destroy()
+    });
+  }
+
+  playDodgeAnimation() {
+    // Backstep & ghost fade
+    this.tweens.add({
+      targets: this.player,
+      x: this.originPlayerX - 45,
+      alpha: 0.35,
+      duration: 120,
+      yoyo: true,
+      onComplete: () => this.player.setAlpha(1)
+    });
+    this.pop('🛡️ DODGE!', this.player.x, this.player.y - 45, '#a9d4ff');
+  }
+
+  playRoleSkillAnimation() {
+    const role = this.role;
+
+    if (role === 'vanguard') {
+      // COMET BREAK (Meteor Dash & Ground Shockwave)
+      this.cameras.main.shake(180, 0.009);
+      this.tweens.add({
+        targets: this.player,
+        x: this.originEnemyX - 40,
+        duration: 140,
+        yoyo: true
+      });
+
+      // Fire burst circle
+      const burst = this.add.circle(this.originEnemyX, this.originEnemyY, 20, 0xff5533, 0.85);
+      this.tweens.add({
+        targets: burst,
+        scale: 4,
+        alpha: 0,
+        duration: 450,
+        onComplete: () => burst.destroy()
+      });
+      this.pop('🔥 COMET BREAK!', this.originEnemyX, this.originEnemyY - 55, '#ff6b55');
+
+    } else if (role === 'tideweaver') {
+      // MOONWELL (Water Vortex & Healing Aura)
+      const ring = this.add.circle(this.player.x, this.player.y, 15, 0x45d4cd, 0.7)
+        .setStrokeStyle(4, 0x7cfbf4, 0.9);
+      this.tweens.add({
+        targets: ring,
+        scale: 4.5,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => ring.destroy()
+      });
+
+      // Tidal splash towards enemy
+      const wave = this.add.ellipse(this.originPlayerX + 80, this.originPlayerY, 40, 70, 0x55c9ef, 0.8);
+      this.tweens.add({
+        targets: wave,
+        x: this.originEnemyX,
+        alpha: 0,
+        duration: 350,
+        onComplete: () => wave.destroy()
+      });
+      this.pop('🌊 MOONWELL (+HP REGEN)', this.player.x, this.player.y - 50, '#55c9ef');
+
+    } else if (role === 'mosswarden') {
+      // ROOT BASTION (Emerald Shield & Bramble Thorns)
+      const shield = this.add.circle(this.player.x, this.player.y, 45, 0x22c55e, 0.3)
+        .setStrokeStyle(5, 0x86efac, 0.95);
+      this.tweens.add({
+        targets: shield,
+        scale: 1.3,
+        alpha: 0,
+        duration: 700,
+        onComplete: () => shield.destroy()
+      });
+
+      // Ground thorns under enemy
+      const thorns = this.add.graphics();
+      thorns.lineStyle(4, 0x4ade80, 1);
+      thorns.beginPath();
+      thorns.moveTo(this.originEnemyX - 30, this.originEnemyY + 25);
+      thorns.lineTo(this.originEnemyX, this.originEnemyY - 20);
+      thorns.lineTo(this.originEnemyX + 30, this.originEnemyY + 25);
+      thorns.strokePath();
+      this.tweens.add({
+        targets: thorns,
+        alpha: 0,
+        duration: 500,
+        onComplete: () => thorns.destroy()
+      });
+      this.pop('🌿 ROOT BASTION!', this.player.x, this.player.y - 50, '#83d68a');
+
+    } else if (role === 'arcanist') {
+      // PRISM LANCE (Crystal Laser Beam)
+      this.cameras.main.shake(120, 0.005);
+      const beam = this.add.graphics();
+      beam.lineStyle(6, 0xd8b4fe, 1);
+      beam.beginPath();
+      beam.moveTo(this.player.x + 20, this.player.y);
+      beam.lineTo(this.originEnemyX, this.originEnemyY);
+      beam.strokePath();
+
+      this.tweens.add({
+        targets: beam,
+        alpha: 0,
+        duration: 350,
+        onComplete: () => beam.destroy()
+      });
+      this.pop('✦ PRISM LANCE!', this.originEnemyX, this.originEnemyY - 55, '#b38aff');
+
+    } else if (role === 'gearling') {
+      // CLOCKWORK SWARM (Spinning Golden Gears)
+      for (let i = 0; i < 4; i++) {
+        const gear = this.add.text(this.player.x, this.player.y + (i * 12 - 18), '⚙️', {
+          fontSize: '22px'
+        }).setOrigin(0.5);
+
+        this.tweens.add({
+          targets: gear,
+          x: this.originEnemyX + Phaser.Math.Between(-25, 25),
+          y: this.originEnemyY + Phaser.Math.Between(-25, 25),
+          angle: 360,
+          duration: 250 + (i * 60),
+          onComplete: () => gear.destroy()
+        });
+      }
+      this.pop('⚙️ CLOCKWORK SWARM!', this.originEnemyX, this.originEnemyY - 55, '#f6bd55');
+
+    } else if (role === 'wisp_scout') {
+      // AFTERIMAGE DASH (Gale Phantom Strike)
+      // Phantom clones
+      [-20, 20].forEach(offset => {
+        const shadow = this.add.circle(this.player.x + offset, this.player.y, 22, 0xa9d4ff, 0.45);
+        this.tweens.add({
+          targets: shadow,
+          alpha: 0,
+          duration: 300,
+          onComplete: () => shadow.destroy()
+        });
+      });
+
+      this.tweens.add({
+        targets: this.player,
+        x: this.originEnemyX - 50,
+        duration: 100,
+        yoyo: true
+      });
+      this.pop('🪽 AFTERIMAGE DASH!', this.player.x, this.player.y - 50, '#a9d4ff');
     }
   }
 

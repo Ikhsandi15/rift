@@ -248,10 +248,10 @@ function gameMarkup() {
           <div class="tiny">${esc(a.roleName)} · ${esc(a.skill)}</div>
         </div>
         <div class="arena-actions">
-          <button class="button small ghost" data-combat="dodge">Dodge (Hindar)</button>
-          <button class="button small secondary" data-combat="attack">Attack (Serang)</button>
-          <button class="button small primary" data-combat="skill">Skill Role</button>
-          <button class="button small ghost" data-game="rest">Camp / Recharge</button>
+          <button class="button small secondary" data-combat="attack">⚔️ Serang</button>
+          <button class="button small primary" data-combat="skill">${esc(a.icon)} ${esc(a.skill)}</button>
+          <button class="button small ghost" data-combat="dodge">🛡️ Hindar</button>
+          <button class="button small ghost" data-game="rest">⛺ Istirahat</button>
         </div>
       </div>
     </section>
