@@ -16,10 +16,23 @@
   <div class="noise"></div>
   <header class="topbar">
     <a class="brand" href="/"><span class="brand-mark">✦</span><span>RIFTBOUND</span></a>
-    <div id="session-actions"></div>
+    <div class="topbar-right">
+      <button id="btn-install-app" class="button small ghost" style="display:none">📲 Pasang App</button>
+      <div id="session-actions"></div>
+    </div>
   </header>
   <main id="app" class="shell"></main>
   <div id="toast" class="toast" role="status"></div>
+  <div id="pwa-install-banner" class="install-banner" style="display:none">
+    <div class="install-banner-text">
+      <b>✦ Pasang Aplikasi Riftbound</b>
+      <small>Buka lebih cepat, fullscreen & tanpa browser lag</small>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button id="pwa-install-btn" class="button small primary">📲 Pasang</button>
+      <button id="pwa-dismiss-btn" class="modal-close-icon" title="Tutup">✕</button>
+    </div>
+  </div>
   <script src="/print.js" defer></script>
   <script src="/app.js" type="module"></script>
 </body>

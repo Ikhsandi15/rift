@@ -542,3 +542,63 @@ async function load() {
 }
 
 load();
+
+// PWA Install Prompt handling
+let deferredPrompt = null;
+const installBanner = document.querySelector('#pwa-install-banner');
+const installTopBtn = document.querySelector('#btn-install-app');
+const pwaInstallBtn = document.querySelector('#pwa-install-btn');
+const pwaDismissBtn = document.querySelector('#pwa-dismiss-btn');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!sessionStorage.getItem('pwa_dismissed')) {
+    if (installBanner) installBanner.style.display = 'flex';
+  }
+  if (installTopBtn) installTopBtn.style.display = 'inline-flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  if (installBanner) installBanner.style.display = 'none';
+  if (installTopBtn) installTopBtn.style.display = 'none';
+  notify('✦ Riftbound berhasil dipasang di HP!');
+});
+
+async function handleInstallClick() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      notify('Memasang Riftbound...');
+    }
+    deferredPrompt = null;
+    if (installBanner) installBanner.style.display = 'none';
+    if (installTopBtn) installTopBtn.style.display = 'none';
+  } else {
+    const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+    if (isIos) {
+      modal(`
+        <div style="text-align:center; padding: 10px 4px;">
+          <div style="font-size:3rem; margin-bottom:8px;">🍎</div>
+          <h3>Pasang di iPhone / iPad</h3>
+          <p class="muted" style="margin:12px 0 16px; font-size:.85rem; line-height:1.6;">
+            1. Tekan tombol <b>Share</b> (ikon kotak panah ke atas ⎋ di Safari).<br>
+            2. Geser ke bawah lalu pilih <b>"Tambahkan ke Layar Utama" (Add to Home Screen ⊞)</b>.
+          </p>
+          <button class="button primary" data-act="close-modal">Mengerti</button>
+        </div>
+      `);
+    } else {
+      notify('Gunakan menu titik tiga (⋮) di browser lalu pilih "Instal Aplikasi"');
+    }
+  }
+}
+
+installTopBtn?.addEventListener('click', handleInstallClick);
+pwaInstallBtn?.addEventListener('click', handleInstallClick);
+pwaDismissBtn?.addEventListener('click', () => {
+  if (installBanner) installBanner.style.display = 'none';
+  sessionStorage.setItem('pwa_dismissed', '1');
+});
