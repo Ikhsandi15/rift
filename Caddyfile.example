@@ -1,0 +1,16 @@
+# Example Caddy reverse proxy for the Riftbound app.
+# Install/configure Caddy on the production host, point rift.pascadigital.my.id DNS to it,
+# and adapt the Node service address to your process manager/container network.
+
+rift.pascadigital.my.id {
+	encode zstd gzip
+
+	# Caddy obtains and renews TLS automatically when DNS and inbound 80/443 are ready.
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+	}
+
+	# Avoid caching account and game API responses at the proxy layer.
+	header /api/* Cache-Control "no-store"
+}
