@@ -13,7 +13,7 @@ FROM node:22-bookworm-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production \
-    PORT=3000 \
+    PORT=3011 \
     DB_PATH=/app/data/card-quest.sqlite
 
 # Create data directory for SQLite persistence and grant permissions to node user
@@ -28,7 +28,7 @@ COPY --chown=node:node public ./public
 # Run as non-root user for security
 USER node
 
-EXPOSE 3000
+EXPOSE 3011
 
 VOLUME ["/app/data"]
 

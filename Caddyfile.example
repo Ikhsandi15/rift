@@ -6,7 +6,7 @@ rift.pascadigital.my.id {
 	encode zstd gzip
 
 	# Caddy obtains and renews TLS automatically when DNS and inbound 80/443 are ready.
-	reverse_proxy 127.0.0.1:3000 {
+	reverse_proxy 127.0.0.1:3011 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}
 	}

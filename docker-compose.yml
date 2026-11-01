@@ -6,11 +6,11 @@ services:
     container_name: card-quest
     restart: unless-stopped
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-3011}:3011"
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:3000}
+      - PORT=3011
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:3011}
       - DB_PATH=/app/data/card-quest.sqlite
       - ADMIN_KEY=${ADMIN_KEY}
     volumes:
