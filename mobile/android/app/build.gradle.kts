@@ -62,7 +62,7 @@ android {
             if (releaseStoreFile?.endsWith(".jks") == false && releaseStoreFile?.endsWith(".keystore") == false) {
                 throw GradleException("Release signing keystore is missing or invalid. Verify RIFT_RELEASE_STORE_FILE/key.properties storeFile.")
             }
-            if (!file(releaseStoreFile!!).exists()) {
+            if (!rootProject.file(releaseStoreFile!!).exists()) {
                 throw GradleException("Release signing keystore not found at configured storeFile.")
             }
             signingConfig = signingConfigs.getByName("release")
