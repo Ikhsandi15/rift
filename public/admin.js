@@ -228,9 +228,13 @@ function renderMonitorTab(cards) {
                   </div>
                 </td>
                 <td>
-                  <div style="display:flex; gap:6px;">
-                    <a class="button small ghost" href="${c.publicUrl}" target="_blank" rel="noopener" title="Buka URL Kartu">Buka ↗</a>
-                    <a class="button small secondary" href="${c.publicUrl}/print" target="_blank" rel="noopener" title="Cetak Kartu Fisik">Print</a>
+                  <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <a class="button small secondary" href="${c.publicUrl}/print" target="_blank" rel="noopener" title="Cetak Kartu Fisik Lengkap QR">🖨️ Print</a>
+                    ${c.status === 'claimed' ? `
+                      <a class="button small ghost" href="${c.publicUrl}?admin_key=${encodeURIComponent(adminKey)}" target="_blank" rel="noopener" title="Lihat Profil Karakter">Lihat Profil ↗</a>
+                    ` : `
+                      <button class="button small ghost" data-copy-link="${c.publicUrl}" title="Copy URL Registrasi">📋 Copy URL</button>
+                    `}
                   </div>
                 </td>
               </tr>
@@ -262,6 +266,16 @@ function renderIssueTab() {
 
 function bindEvents() {
   document.querySelector('#btn-refresh')?.addEventListener('click', loadDashboard);
+
+  content.addEventListener('click', e => {
+    const copyBtn = e.target.closest('[data-copy-link]');
+    if (copyBtn) {
+      navigator.clipboard.writeText(copyBtn.dataset.copyLink);
+      const orig = copyBtn.textContent;
+      copyBtn.textContent = '✓ Copied!';
+      setTimeout(() => { copyBtn.textContent = orig; }, 1800);
+    }
+  });
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
