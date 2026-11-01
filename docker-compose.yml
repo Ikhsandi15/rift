@@ -10,9 +10,9 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3011
-      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:3011}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-https://rift.pascadigital.my.id}
       - DB_PATH=/app/data/card-quest.sqlite
-      - ADMIN_KEY=${ADMIN_KEY}
+      - ADMIN_KEY=${ADMIN_KEY:-}
     volumes:
       - card-quest-data:/app/data
 

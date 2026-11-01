@@ -20,6 +20,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production \
     PORT=3011 \
+    PUBLIC_BASE_URL=https://rift.pascadigital.my.id \
     DB_PATH=/app/data/card-quest.sqlite
 
 # Create data directory for SQLite persistence and grant permissions to node user
